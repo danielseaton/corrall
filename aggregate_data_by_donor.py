@@ -8,18 +8,13 @@ import collections
 from datetime import datetime
 import argparse
 
-## TO-DO
-# - use the correct donor mapping file
-# - output tables of counts instead of fractions
-# - remove threshold on number of cells in which a SNP was quantified 
-
 parser = argparse.ArgumentParser(description='Collect data for all samples from a particular individual.')
 parser.add_argument('donor_id')
 parser.add_argument('donor_id_mapping_file')
 args = parser.parse_args()
 
-#filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/low_thresh/{sample_id}.ase.lowthresh.tsv'
-filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/high_thresh/{sample_id}.ase.highthresh.tsv'
+filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/low_thresh/{sample_id}.ase.lowthresh.tsv'
+#filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/high_thresh/{sample_id}.ase.highthresh.tsv'
 
 out_dir = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor'
 
