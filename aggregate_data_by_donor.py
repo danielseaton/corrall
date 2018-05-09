@@ -24,9 +24,9 @@ filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnase
 out_dir = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor'
 
 #outfile_template = os.path.join(out_dir,'{donor}.ase.lowthresh.tsv')
-outfile_template = os.path.join(out_dir,'{donor}.ase.highthresh.tsv')
+outfile_template = os.path.join(out_dir,'{donor_id}.ase.highthresh.tsv')
 
-donor_id = args.donor
+donor_id = args.donor_id
 donor_id_mapping_file = args.donor_id_mapping_file
 
 donor_df = pd.read_csv(donor_id_mapping_file, sep='\t')
@@ -36,9 +36,9 @@ sub_donor_df = donor_df.query('donor_long_id==@donor_id')
 filelist = [filepattern.format(run_id=row['run_id'],sample_id=row['sample_id']) for idx,row in sub_donor_df.iterrows()]
 filelist = [x for x in filelist if os.path.exists(x)]
 
-print('{} files for donor {}'.format(len(filelist),donor))
-        
-ase_outfile = outfile_template.format(donor=donor)
+print('{} files for donor {}'.format(len(filelist), donor_id))
+
+ase_outfile = outfile_template.format(donor_id=donor_id)
 snp_outfile = ase_outfile.replace('.tsv','.snp_info.tsv')
 
 #threshold on number of cells in which a specific snp was quantified
