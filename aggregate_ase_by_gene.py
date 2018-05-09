@@ -18,9 +18,9 @@ outfile_suffix = args.outfile_suffix
 
 # infer other filenames based on input file
 snp_info_bedfile = snp_info_file.replace('.snp_info.tsv', '.snp_info.bed')
-snp_gene_intersection_file = snp_info_file.replace(
-    '.snp_info.tsv', '.snp_gene_intersection.tsv')
-ase_file_out = ase_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
+snp_gene_intersection_file = snp_info_file.replace('.snp_info.tsv', '.snp_gene_intersection.tsv')
+alt_file_out = ase_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
+total_file_out = ase_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
 
 # input ASE quantifications
 alt_df = pd.read_csv(altcounts_file, sep='\t', index_col=0)
@@ -65,7 +65,6 @@ map_df = map_df.set_index('gene_id', drop=False)
 
 # map from genes to sets of SNPs
 
-
 gene_list = map_df['gene_id'].drop_duplicates().tolist()
 
 
@@ -74,9 +73,11 @@ def aggregate_counts_to_gene(df):
     for gene in gene_list[:]:
         snps = map_df.loc[[gene], 'snp_id']
         
-        data = ase_df.loc[snps, :]
+        data = df.loc[snps, :]
         gene_df.loc[gene, :] = data.sum()
 
+gene_alt_df = aggregate_counts_to_gene(alt_df)
+gene_total_df = aggregate_counts_to_gene(total_df)
 
-
-gene_ase_df.to_csv(ase_file_out, sep='\t')
+gene_alt_df.to_csv(alt_file_out, sep='\t')
+gene_total_df.to_csv(total_file_out, sep='\t')
