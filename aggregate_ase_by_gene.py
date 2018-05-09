@@ -19,8 +19,8 @@ outfile_suffix = args.outfile_suffix
 # infer other filenames based on input file
 snp_info_bedfile = snp_info_file.replace('.snp_info.tsv', '.snp_info.bed')
 snp_gene_intersection_file = snp_info_file.replace('.snp_info.tsv', '.snp_gene_intersection.tsv')
-alt_file_out = ase_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
-total_file_out = ase_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
+alt_file_out = altcounts_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
+total_file_out = totalcounts_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
 
 # input ASE quantifications
 alt_df = pd.read_csv(altcounts_file, sep='\t', index_col=0)
@@ -31,7 +31,7 @@ gene_bed = pybedtools.BedTool(gene_bedfile)
 
 # convert SNP info table into a bed file
 snp_df = pd.read_csv(snp_info_file, sep='\t', index_col=0)
-snp_df = snp_df.loc[ase_df.index, :]
+snp_df = snp_df.loc[alt_df.index, :]
 # convert chr names
 snp_df['chromosome'] = snp_df['contig'].apply(lambda x: x.replace('chr', ''))
 # snp_df['chromosome'] = snp_df['contig']
@@ -75,6 +75,7 @@ def aggregate_counts_to_gene(df):
         
         data = df.loc[snps, :]
         gene_df.loc[gene, :] = data.sum()
+    return gene_df
 
 gene_alt_df = aggregate_counts_to_gene(alt_df)
 gene_total_df = aggregate_counts_to_gene(total_df)
