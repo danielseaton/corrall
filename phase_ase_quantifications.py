@@ -37,10 +37,9 @@ samples = vcf.samples
 
 #match donor with sample
 donor_id = os.path.basename(ase_file).split('.')[0]
-regex_string = 'HPSI[0-9]{{4}}i-{donor}_[0-9]+'.format(donor=donor_id)
-matching_samples = [x for x in samples if re.search(regex_string, x)]
-sample = matching_samples[0]
-
+sample = donor_id
+if sample not in available_samples:
+    raise(ValueError('Sample {} not present in input vcf file.'.format(sample)))
 
 for vcffile in vcf_files:
     
