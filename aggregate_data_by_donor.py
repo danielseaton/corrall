@@ -13,13 +13,14 @@ parser.add_argument('donor_id')
 parser.add_argument('donor_id_mapping_file')
 args = parser.parse_args()
 
-filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/low_thresh/{sample_id}.ase.lowthresh.tsv'
-#filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/high_thresh/{sample_id}.ase.highthresh.tsv'
-
 out_dir = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor'
 
-#outfile_template = os.path.join(out_dir,'{donor}.ase.lowthresh.tsv')
-outfile_template = os.path.join(out_dir,'{donor_id}.ase.highthresh.{filetype}.tsv')
+
+filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/low_thresh/{sample_id}.ase.lowthresh.tsv'
+outfile_template = os.path.join(out_dir,'{donor_id}.ase.lowthresh.{filetype}.tsv')
+
+#filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/high_thresh/{sample_id}.ase.highthresh.tsv'
+#outfile_template = os.path.join(out_dir,'{donor_id}.ase.highthresh.{filetype}.tsv')
 
 donor_id = args.donor_id
 donor_id_mapping_file = args.donor_id_mapping_file
