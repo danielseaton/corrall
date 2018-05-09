@@ -14,7 +14,8 @@ import argparse
 # - remove threshold on number of cells in which a SNP was quantified 
 
 parser = argparse.ArgumentParser(description='Collect data for all samples from a particular individual.')
-parser.add_argument('donor')
+parser.add_argument('donor_id')
+parser.add_argument('donor_id_mapping_file')
 args = parser.parse_args()
 
 #filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/low_thresh/{sample_id}.ase.lowthresh.tsv'
@@ -25,12 +26,12 @@ out_dir = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/a
 #outfile_template = os.path.join(out_dir,'{donor}.ase.lowthresh.tsv')
 outfile_template = os.path.join(out_dir,'{donor}.ase.highthresh.tsv')
 
-donor = args.donor
+donor_id = args.donor
+donor_id_mapping_file = args.donor_id_mapping_file
 
-
-donor_df = pd.read_csv('../../data/donor_id_info.tsv',sep='\t')
-donors = donor_df['donor_id'].unique().tolist()
-sub_donor_df = donor_df.query('donor_id==@donor')
+donor_df = pd.read_csv(donor_id_mapping_file, sep='\t')
+donors = donor_df['donor_long_id'].unique().tolist()
+sub_donor_df = donor_df.query('donor_long_id==@donor_id')
 
 filelist = [filepattern.format(run_id=row['run_id'],sample_id=row['sample_id']) for idx,row in sub_donor_df.iterrows()]
 filelist = [x for x in filelist if os.path.exists(x)]
