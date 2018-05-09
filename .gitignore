@@ -1,0 +1,4 @@
+*.py[cod~]
+*config.json
+.DS_store
+.cache
