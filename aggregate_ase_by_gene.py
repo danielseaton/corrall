@@ -5,15 +5,16 @@ import argparse
 parser = argparse.ArgumentParser(description='Aggregate phased allele-specific expression quantifications at the gene level.')
 parser.add_argument('altcounts_file')
 parser.add_argument('totalcounts_file')
+parser.add_argument('snp_info_file')
 parser.add_argument('gene_bedfile')
 parser.add_argument('outfile_suffix', default='genelevel')
 args = parser.parse_args()
-ase_file = args.ase_file
+
+altcounts_file = args.altcounts_file
+totalcounts_file = args.totalcounts_file
+snp_info_file = args.snp_info_file
 gene_bedfile = args.gene_bedfile
 outfile_suffix = args.outfile_suffix
-#donor = 'poih'
-#donor = 'puie'
-#ase_file = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/{}.ase.lowthresh.phased.tsv'.format(donor)
 
 # infer other filenames based on input file
 snp_info_bedfile = snp_info_file.replace('.snp_info.tsv', '.snp_info.bed')
@@ -21,12 +22,12 @@ snp_gene_intersection_file = snp_info_file.replace(
     '.snp_info.tsv', '.snp_gene_intersection.tsv')
 ase_file_out = ase_file.replace('.tsv', '.{}.tsv'.format(outfile_suffix))
 
-# gene location file
-gene_bed = pybedtools.BedTool(gene_bedfile)
-
 # input ASE quantifications
 alt_df = pd.read_csv(altcounts_file, sep='\t', index_col=0)
 total_df = pd.read_csv(totalcounts_file, sep='\t', index_col=0)
+
+# gene location file
+gene_bed = pybedtools.BedTool(gene_bedfile)
 
 # convert SNP info table into a bed file
 snp_df = pd.read_csv(snp_info_file, sep='\t', index_col=0)
