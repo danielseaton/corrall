@@ -19,7 +19,7 @@ filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnase
 out_dir = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor'
 
 #outfile_template = os.path.join(out_dir,'{donor}.ase.lowthresh.tsv')
-outfile_template = os.path.join(out_dir,'{donor_id}.ase.highthresh.tsv')
+outfile_template = os.path.join(out_dir,'{donor_id}.ase.highthresh.{filetype}.tsv')
 
 donor_id = args.donor_id
 donor_id_mapping_file = args.donor_id_mapping_file
@@ -33,8 +33,9 @@ filelist = [x for x in filelist if os.path.exists(x)]
 
 print('{} files for donor {}'.format(len(filelist), donor_id))
 
-ase_outfile = outfile_template.format(donor_id=donor_id)
-snp_outfile = ase_outfile.replace('.tsv','.snp_info.tsv')
+alt_outfile = outfile_template.format(donor_id=donor_id, filetype='altcount')
+total_outfile = outfile_template.format(donor_id=donor_id, filetype='totalcount')
+snp_outfile = outfile_template.format(donor_id=donor_id, filetype='snp_info')
 
 #threshold on number of cells in which a specific snp was quantified
 count_threshold = len(filelist) // 100
@@ -54,7 +55,7 @@ selected_snps = []
 for filename in filelist[:]:
     df = pd.read_csv(filename, sep='\t')
     variant_ids = df['variantID'].tolist()
-    values = (df['refCount']/df['totalCount']).tolist()
+    values = (df['altCount']/df['totalCount']).tolist()
     
     for vid,value in zip(variant_ids,values):
         sum_dict[vid] += value
@@ -68,7 +69,8 @@ print('{} SNPs selected of {}'.format(len(selected_snps),len(counter_dict.keys()
 
 #make tables
 sample_ids = [os.path.basename(x).split('.')[0] for x in filelist]
-ase_df = pd.DataFrame(index=selected_snps,columns=sample_ids)
+alt_df = pd.DataFrame(index=selected_snps,columns=sample_ids)
+total_df = pd.DataFrame(index=selected_snps,columns=sample_ids)
 
 snp_df_columns= ['contig','position','variantID','refAllele','altAllele']
 snp_df = pd.DataFrame(np.nan,index=selected_snps,columns=snp_df_columns)
@@ -78,12 +80,14 @@ for idx,filename in enumerate(filelist):
     
     df = pd.read_csv(filename, sep='\t', index_col=2)
     
-    df['ratio'] = df['refCount']/df['totalCount']
+    #df['ratio'] = df['refCount']/df['totalCount']
     
     snp_subset = list(set(selected_snps) & set(df.index))
     
-    ase_df.loc[snp_subset,sample_id] = df.loc[snp_subset,'ratio']
+    alt_df.loc[snp_subset,sample_id] = df.loc[snp_subset,'altCount']
+    total_df.loc[snp_subset,sample_id] = df.loc[snp_subset,'totalCount']
     snp_df.loc[snp_subset,snp_df_columns] = df.loc[snp_subset,snp_df_columns]
 
-ase_df.to_csv(ase_outfile,sep='\t')
+alt_df.to_csv(alt_outfile,sep='\t')
+total_df.to_csv(total_outfile,sep='\t')
 snp_df.to_csv(snp_outfile,sep='\t')
