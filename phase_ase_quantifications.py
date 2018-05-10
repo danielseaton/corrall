@@ -16,8 +16,8 @@ altcounts_file = args.altcounts_file
 totalcounts_file = args.totalcounts_file
 snp_info_file = args.snp_info_file
 
-alt_outfile = altcounts_file.replace('altcount.tsv','chrBcounts.phased.tsv')
-total_outfile = altcounts_file.replace('altcount.tsv','totalcounts.phased.tsv')
+alt_outfile = altcounts_file.replace('altcount.tsv','chrBcount.phased.tsv')
+total_outfile = altcounts_file.replace('altcount.tsv','totalcount.phased.tsv')
 
 print('Phasing ASE quantifications from {}'.format(altcounts_file))
 
