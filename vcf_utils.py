@@ -33,7 +33,6 @@ def get_snp_genotypes(chromosome, position, samples=None):
     
     var = variants[0]
     
-    print(var.genotypes)
     genotype_df = pd.DataFrame(index=samples, columns=['chrA','chrB','phased'], data=var.genotypes)
 
     return genotype_df
