@@ -11,7 +11,12 @@ def get_snp_genotypes(chromosome, position, samples=None):
         vcf = cyvcf2.VCF(vcf_file)
         samples = vcf.samples
     else:
+        if len(samples) != len(set(samples)):
+            raise(ValueError('Duplicated samples in input list'))
         vcf = cyvcf2.VCF(vcf_file, samples=samples)
+        for sample in samples:
+            if sample not in vcf.samples:
+                raise(KeyError('{} not in vcf'.format(sample)))
     
     query_string = '{chromosome}:{position}-{position}'.format(chromosome=chromosome, position=position)
 
@@ -28,6 +33,7 @@ def get_snp_genotypes(chromosome, position, samples=None):
     
     var = variants[0]
     
+    print(var.genotypes)
     genotype_df = pd.DataFrame(index=samples, columns=['chrA','chrB','phased'], data=var.genotypes)
 
     return genotype_df
