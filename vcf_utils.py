@@ -1,6 +1,7 @@
 from __future__ import print_function
 import cyvcf2
 import pandas as pd
+import numpy as np
 
 def get_snp_genotypes(chromosome, position, samples=None):
     '''Returns a pandas DataFrame of genotypes, along with phasing status, for a specific SNP.'''
@@ -39,3 +40,33 @@ def get_snp_genotypes(chromosome, position, samples=None):
 
 #samples = ['HPSI0516i-pebf_2', 'HPSI0516i-zujs_5', 'HPSI1116pf-peru']
 #df = get_snp_genotypes(1,714439,samples)
+
+
+def get_het_snp_phase_dataframe(snp_df, samples):
+    '''Get phase information for SNPs across samples.
+    
+    Each heterozygous SNP is encoded as 0 (chrA) or 1 (chrB). Homozygous samples
+    are encoded as NaN.'''
+    
+    for colname in ['chrom','pos']:
+        if colname not in snp_df.columns:
+            raise(ValueError('{} not present in the input SNP dataframe.'.format(colname)))
+
+    out_df = pd.DataFrame(index=snp_df.index, columns=samples)
+    
+    failed = []
+    
+    for idx in snp_df.index:
+        try:
+            chrom, pos = snp_df.loc[idx, ['chrom', 'pos']]
+            # get genotypes across donors
+            genotype_df = get_snp_genotypes(chrom, pos, samples=samples)
+            # encode phasing as NaN if not heterozygous, otherwise 1 if chrB, 0 if chrA
+            results = genotype_df.apply(lambda x: np.nan if x[['chrA','chrB']].sum()!=1 else x['chrB'],axis=1)
+            out_df.loc[idx,samples] = results
+        except Exception as e:
+            print('{} failed. {}'.format(idx, e))
+            failed.append(idx)
+            pass
+
+    return out_df
