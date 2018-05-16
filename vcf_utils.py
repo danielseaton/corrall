@@ -51,6 +51,9 @@ def get_het_snp_phase_dataframe(snp_df, samples):
     for colname in ['chrom','pos']:
         if colname not in snp_df.columns:
             raise(ValueError('{} not present in the input SNP dataframe.'.format(colname)))
+    
+    if any(snp_df.index.duplicated()):
+        print('Warning: duplicated indices in snp_df to get_het_snp_phase_dataframe.')
 
     out_df = pd.DataFrame(index=snp_df.index, columns=samples)
     
