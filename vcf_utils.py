@@ -18,6 +18,8 @@ def get_snp_genotypes(chromosome, position, samples=None):
         for sample in samples:
             if sample not in vcf.samples:
                 raise(KeyError('{} not in vcf'.format(sample)))
+        # reorder samples to match order in which they'll be give by the vcf object
+        samples = vcf.samples
     
     query_string = '{chromosome}:{position}-{position}'.format(chromosome=chromosome, position=position)
 
@@ -66,7 +68,7 @@ def get_het_snp_phase_dataframe(snp_df, samples):
             genotype_df = get_snp_genotypes(chrom, pos, samples=samples)
             # encode phasing as NaN if not heterozygous, otherwise 1 if chrB, 0 if chrA
             results = genotype_df.apply(lambda x: np.nan if x[['chrA','chrB']].sum()!=1 else x['chrB'],axis=1)
-            out_df.loc[idx,samples] = results
+            out_df.loc[idx,samples] = results.loc[samples]
         except Exception as e:
             print('{} failed. {}'.format(idx, e))
             failed.append(idx)
