@@ -30,9 +30,16 @@ donors = donor_df['donor_long_id'].unique().tolist()
 sub_donor_df = donor_df.query('donor_long_id==@donor_id')
 
 filelist = [filepattern.format(run_id=row['run_id'],sample_id=row['sample_id']) for idx,row in sub_donor_df.iterrows()]
+n_files_expected = len(filelist)
+missing_filelist = [x for x in filelist if not os.path.exists(x)]
 filelist = [x for x in filelist if os.path.exists(x)]
+n_files = len(filelist)
 
-print('{} files for donor {}'.format(len(filelist), donor_id))
+print('{} files for donor {} ({} missing)'.format(n_files, donor_id,n_files_expected - n_files))
+
+if len(missing_filelist)>0:
+    print('Missing:')
+    print([os.path.basename(x) for x in missing_filelist])
 
 alt_outfile = outfile_template.format(donor_id=donor_id, filetype='altcount')
 total_outfile = outfile_template.format(donor_id=donor_id, filetype='totalcount')
