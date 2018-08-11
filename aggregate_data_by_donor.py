@@ -9,27 +9,21 @@ from datetime import datetime
 import argparse
 
 parser = argparse.ArgumentParser(description='Collect data for all samples from a particular individual.')
-parser.add_argument('donor_id')
-parser.add_argument('donor_id_mapping_file')
+parser.add_argument('donor_id', help='donor ID, to match format from the donor_id column in donor_id_mapping_file')
+parser.add_argument('donor_id_mapping_file', help='tab-separated file with \"donor_id\" and \"filepath\" columns, mapping donors to ase quantification files')
+parser.add_argument('out_dir', help='output directory')
 args = parser.parse_args()
-
-out_dir = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor'
-
-
-filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/low_thresh/{sample_id}.ase.lowthresh.tsv'
-outfile_template = os.path.join(out_dir,'{donor_id}.ase.lowthresh.{filetype}.tsv')
-
-#filepattern = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_raw/scrnaseq/{run_id}/ase/high_thresh/{sample_id}.ase.highthresh.tsv'
-#outfile_template = os.path.join(out_dir,'{donor_id}.ase.highthresh.{filetype}.tsv')
 
 donor_id = args.donor_id
 donor_id_mapping_file = args.donor_id_mapping_file
+out_dir = args.out_dir
+
+outfile_template = os.path.join(out_dir,'{donor_id}.ase.{filetype}.tsv')
 
 donor_df = pd.read_csv(donor_id_mapping_file, sep='\t')
-donors = donor_df['donor_long_id'].unique().tolist()
-sub_donor_df = donor_df.query('donor_long_id==@donor_id')
 
-filelist = [filepattern.format(run_id=row['run_id'],sample_id=row['sample_id']) for idx,row in sub_donor_df.iterrows()]
+sub_donor_df = donor_df.query('donor_id==@donor_id')
+filelist = sub_donor_df['filepath'].tolist()
 n_files_expected = len(filelist)
 missing_filelist = [x for x in filelist if not os.path.exists(x)]
 filelist = [x for x in filelist if os.path.exists(x)]
