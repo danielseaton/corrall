@@ -18,6 +18,9 @@ donor_id = args.donor_id
 donor_id_mapping_file = args.donor_id_mapping_file
 out_dir = args.out_dir
 
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
+
 outfile_template = os.path.join(out_dir,'{donor_id}.ase.{filetype}.tsv')
 
 donor_df = pd.read_csv(donor_id_mapping_file, sep='\t')
