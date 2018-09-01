@@ -4,7 +4,16 @@ import pandas as pd
 import numpy as np
 
 def get_snp_genotypes(chromosome, position, samples=None):
-    '''Returns a pandas DataFrame of genotypes, along with phasing status, for a specific SNP.'''
+    '''Returns a pandas DataFrame of genotypes, along with phasing status, for a specific SNP.
+
+    >>> samples = ['HPSI0516i-pebf_2', 'HPSI0516i-zujs_5', 'HPSI1116pf-peru']
+    >>> df = get_snp_genotypes(1,714439,samples)
+    >>> df
+                      chrA  chrB  phased
+    HPSI0516i-pebf_2     0     0    True
+    HPSI0516i-zujs_5     0     0    True
+    HPSI1116pf-peru      0     0    True
+    '''
 
     vcf_file = '/hps/nobackup/hipsci/scratch/genotypes/imputed/REL-2018-01/Full_Filtered/hipsci.wec.gtarray.HumanCoreExome.imputed_phased.20180102.genotypes.chr.{chromosome}.norm.renamed.recode.vcf.gz'.format(chromosome=chromosome)
 
@@ -40,9 +49,6 @@ def get_snp_genotypes(chromosome, position, samples=None):
 
     return genotype_df
 
-#samples = ['HPSI0516i-pebf_2', 'HPSI0516i-zujs_5', 'HPSI1116pf-peru']
-#df = get_snp_genotypes(1,714439,samples)
-
 
 def get_het_snp_phase_dataframe(snp_df, samples):
     '''Get phase information for SNPs across samples.
@@ -76,3 +82,8 @@ def get_het_snp_phase_dataframe(snp_df, samples):
             pass
 
     return out_df
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
