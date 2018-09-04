@@ -16,21 +16,37 @@ import corrall
 
 
 
+# qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
+# qtl_file_short_name = 'all_leads_one_per_gene'
+# qtl_df = pd.read_csv(qtl_filename,sep='\t')
+# qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
+# #select lowest p val for each gene
+# qtl_df = qtl_df.groupby('feature').apply(lambda x: x.sort_values(by='empirical_feature_p_value').iloc[0,:])
+# #output to similar file to record gene-snp relationships
+# qtl_df.to_csv(qtl_filename.replace('.tsv','.subset_for_ase_phasing.tsv'), sep='\t',index=False)
+# #process for het phasing
+# qtl_df = qtl_df.set_index('ensembl_gene_id', drop=False)
+# qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
+# #qtl_df = qtl_df.query('empirical_feature_p_value < 0.00001')
+# # sort low to high by p-value
+# qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
+# qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id'])
+
+
+
+
 qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
-qtl_file_short_name = 'all_leads_one_per_gene'
+qtl_file_short_name = 'all_leads'
 qtl_df = pd.read_csv(qtl_filename,sep='\t')
 qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
-#select lowest p val for each gene
-qtl_df = qtl_df.groupby('feature').apply(lambda x: x.sort_values(by='empirical_feature_p_value').iloc[0,:])
-#output to similar file to record gene-snp relationships
-qtl_df.to_csv(qtl_filename.replace('.tsv','.subset_for_ase_phasing.tsv'), sep='\t',index=False)
 #process for het phasing
-qtl_df = qtl_df.set_index('ensembl_gene_id', drop=False)
+qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
 qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
 #qtl_df = qtl_df.query('empirical_feature_p_value < 0.00001')
 # sort low to high by p-value
 qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
-qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id'])
+qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
+#qtl_df = qtl_df.head(50)
 
 
 # qtl_filename = '/nfs/leia/research/stegle/acuomo/mean_day3_chr1/logcounts_all_107don_expt_defendo_leads/top_qtl_results_all.txt'
@@ -45,13 +61,15 @@ qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id'])
 
 #qtl_df = qtl_df.loc[gene_list,:].dropna(how='all')
 
+
+
 #get list of genes to be evaluated
 
 gene_list = qtl_df['ensembl_gene_id'].tolist()
 
 #subset donors
 
-n_extra_donors = 150
+n_extra_donors = 3000
 
 donor_list = ['HPSI0514i-puie_5','HPSI0214i-poih_4','HPSI0514i-letw_1','HPSI0813i-guss_1','HPSI0413i-nudd_1','HPSI1014i-sehl_6','HPSI0114i-joxm_1']
 with open('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/list_of_singlecell_endodiff_donors.tsv', 'r') as f:
@@ -95,6 +113,14 @@ donor_list = donor2cell_dict.keys()
 
 ase_df = allelic_df/total_df
 
+# re-index ase_df to match gene-snp pairs in snp_df
+gene_to_snp_mapping_df = snp_df[['ensembl_gene_id','snp_id']].set_index('ensembl_gene_id')
+
+ase_df = ase_df.join(gene_to_snp_mapping_df, how='inner')
+ase_df['ensembl_gene_id'] = ase_df.index
+ase_df = ase_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
+ase_df = ase_df.set_index(['ensembl_gene_id','snp_id'])
+
 
 all_cells = list(ase_df.columns)
 
@@ -133,8 +159,12 @@ def phase_data_for_gene(gene_name):
 
     return ase_data
 
-gene_list = snp_df['ensembl_gene_id'].tolist()
-gene_df = pd.DataFrame(gene_list, columns=['gene_id'], index=gene_list)
-new_phased_ase_df = gene_df['gene_id'].apply(phase_data_for_gene)
+# gene_list = snp_df['ensembl_gene_id'].tolist()
+# gene_df = pd.DataFrame(gene_list, columns=['gene_id'], index=gene_list)
+# new_phased_ase_df = gene_df['gene_id'].apply(phase_data_for_gene)
+
+index_list = list(snp_df.index)
+new_phased_ase_data = [phase_data_for_gene(x) for x in index_list]
+new_phased_ase_df = pd.DataFrame(new_phased_ase_data)
 
 new_phased_ase_df.to_csv('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased.{}.tsv'.format(qtl_file_short_name), sep='\t')
