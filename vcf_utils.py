@@ -34,6 +34,9 @@ def get_snp_genotypes(chromosome, position, samples=None):
 
     variants = [x for x in vcf(query_string)]
 
+    # only keep SNPs
+    variants = [x for x in variants if x.is_snp]
+
     if len(variants) > 1:
         error_message = '''Input vcf file contains more than one SNP at position {chromosome}:{position}'''.format(chromosome=chromosome,
                                                                                                                position=position)
