@@ -42,11 +42,24 @@ qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
 #process for het phasing
 qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
 qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
-#qtl_df = qtl_df.query('empirical_feature_p_value < 0.00001')
 # sort low to high by p-value
 qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
 qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
-#qtl_df = qtl_df.head(50)
+# #qtl_df = qtl_df.head(50)
+
+
+
+# qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_neuroseq/data/qtl_analysis/leads_to_test/top_qtl_results_all_primary_global_fdr0.05.txt'
+# qtl_file_short_name = 'all_hipsci_ipsc_bulk_leads'
+# qtl_df = pd.read_csv(qtl_filename, sep='\t')
+# qtl_df['ensembl_gene_id'] = qtl_df['feature_id'].apply(lambda x: x.split('_')[0])
+# # process for het phasing
+# qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
+# qtl_df = qtl_df.rename(columns={'snp_chromosome': 'chrom', 'snp_position': 'pos'})
+# # sort low to high by p-value
+# qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
+# qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
+# #qtl_df = qtl_df.head(10)
 
 
 # qtl_filename = '/nfs/leia/research/stegle/acuomo/mean_day3_chr1/logcounts_all_107don_expt_defendo_leads/top_qtl_results_all.txt'
