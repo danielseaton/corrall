@@ -45,7 +45,7 @@ qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
 # sort low to high by p-value
 qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
 qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
-# #qtl_df = qtl_df.head(50)
+# qtl_df = qtl_df.head(40)
 
 
 
@@ -78,7 +78,7 @@ qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
 
 #get list of genes to be evaluated
 
-gene_list = qtl_df['ensembl_gene_id'].tolist()
+gene_list = qtl_df['ensembl_gene_id'].drop_duplicates().tolist()
 
 #subset donors
 
@@ -92,12 +92,7 @@ with open('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/lis
 donor_list = list(set(donor_list))[:]
 
 
-snp_df = qtl_df
-
 # ase_df gives data for each gene, using phased SNP info to give proportion of expression from chrB
-#ase_df
-
-#donor2cell_dict
 
 donor2cell_dict = dict()
 
@@ -126,24 +121,23 @@ donor_list = donor2cell_dict.keys()
 
 ase_df = allelic_df/total_df
 
-# re-index ase_df to match gene-snp pairs in snp_df
-gene_to_snp_mapping_df = snp_df[['ensembl_gene_id','snp_id']].set_index('ensembl_gene_id')
-
-ase_df = ase_df.join(gene_to_snp_mapping_df, how='inner')
-ase_df['ensembl_gene_id'] = ase_df.index
-ase_df = ase_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
-ase_df = ase_df.set_index(['ensembl_gene_id','snp_id'])
-
-
 all_cells = list(ase_df.columns)
+
+
+# gene list is reduced to whatever we actually have data for
+gene_list = list(ase_df.index)
+
+snp_df = qtl_df.query('ensembl_gene_id in @gene_list')
+
+
 
 #snp_df = snp_df.head(20)
 snp_phase_df = corrall.vcf_utils.get_het_snp_phase_dataframe(snp_df, donor_list)
 
 
 
-def phase_data_for_gene(gene_name):
-    phasing_data = snp_phase_df.loc[gene_name, :].dropna()
+def phase_data_for_gene(gene_name,snp_id):
+    phasing_data = snp_phase_df.loc[(gene_name,snp_id), :].dropna()
 
     #subset to heterozygous donors
     het_donors = list(phasing_data.index)
@@ -164,7 +158,6 @@ def phase_data_for_gene(gene_name):
         phase = phasing_data.loc[donor]
         if phase == 0:
             # phase ASE to the selected SNP
-#            pass
             ase_data.loc[cells] = ase_data.loc[cells].apply(lambda x: 1.0-x)
         elif phase == 1:
             # ASE is already phased to the selected SNP
@@ -172,12 +165,7 @@ def phase_data_for_gene(gene_name):
 
     return ase_data
 
-# gene_list = snp_df['ensembl_gene_id'].tolist()
-# gene_df = pd.DataFrame(gene_list, columns=['gene_id'], index=gene_list)
-# new_phased_ase_df = gene_df['gene_id'].apply(phase_data_for_gene)
 
-index_list = list(snp_df.index)
-new_phased_ase_data = [phase_data_for_gene(x) for x in index_list]
-new_phased_ase_df = pd.DataFrame(new_phased_ase_data)
+new_phased_ase_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: phase_data_for_gene(x['ensembl_gene_id'],x['snp_id']), axis=1)
 
 new_phased_ase_df.to_csv('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased.{}.tsv'.format(qtl_file_short_name), sep='\t')
