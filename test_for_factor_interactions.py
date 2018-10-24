@@ -34,9 +34,15 @@ n_index_cols = 2
 # combinations_to_test = list(combinations(factors_to_test, 2))
 
 
-factor_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts.PCA.cluster_means.tsv'
-outfile_pattern = working_dir + '/data/ase_env_interactions/PCA_and_cluster_means.{test_type}.'+ase_short_name+'.tsv'
-factors_to_test = ['PC1','0','10','28','30','51','54','59']
+# factor_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts.PCA.cluster_means.tsv'
+# outfile_pattern = working_dir + '/data/ase_env_interactions/PCA_and_cluster_means.{test_type}.'+ase_short_name+'.tsv'
+# factors_to_test = ['PC1','0','10','28','30','51','54','59']
+# combinations_to_test = list(combinations(factors_to_test, 2))
+
+factor_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts_pseudotimeandmodules_20180618.tsv'
+outfile_pattern = working_dir + '/data/ase_env_interactions/pseudotimeandmodules.{test_type}.'+ase_short_name+'.tsv'
+metadata_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts_metadata_20180618.tsv'
+factors_to_test = ['pseudotime','respiration','G1_S_transition','sterol_biosynthesis','G2_M_transition']
 combinations_to_test = list(combinations(factors_to_test, 2))
 
 #factors_to_test = []
@@ -47,6 +53,8 @@ combinations_to_test = list(combinations(factors_to_test, 2))
 # factors_to_test = ['PC{}'.format(x) for x in range(1,11)]
 # combinations_to_test = list(combinations(factors_to_test, 2))
 
+metadata_df = pd.read_csv(metadata_file, sep='\t', index_col=0)
+donor_data = metadata_df['donor']
 
 factor_df = pd.read_csv(factor_file, sep='\t', index_col=0)
 
@@ -88,6 +96,26 @@ if permute:
 # outfile = ase_filepattern.format(donor=donor, filetype='ase_pc_interaction_tests')
 # if permute:
 #     outfile = outfile.replace('.tsv','.permuted.tsv')
+
+def test_single_interaction_lmm(ase_data, env_factor, permute=False):
+    ### TODO introduce permutations
+    assert(not permute)
+    output = pd.Series(index=['coef','pval','n_cells'])
+    ase_data.name = 'ASE'
+    env_factor.name = 'factor'
+    try:
+        data = pd.concat([env_factor,donor_data,ase_data],axis=1,join='inner').dropna()
+        n_cells = data.shape[0]
+        md = smf.mixedlm("ASE ~ pseudotime", data, groups=data["donor"])
+        mdf = md.fit()
+        pval = mdf.pvalues['factor']
+        coef = mdf.params['factor']
+        output['n_cells'] = n_cells
+        output['coef'] = coef
+        output['pval'] = pval
+    except:
+        pass
+    return output
 
 
 def test_multiple_interactions_lm(ase_data, env_factor, permute=False):
@@ -205,22 +233,43 @@ def run_tests(env_factor, test_fcn, permute=False):
 
 
 
-#### With pseudotime as only a squared term (centred)
+# #### With pseudotime as only a squared term (centred)
 
-### NOTE - NEEDS TO BE CENTERED. WORKS FOR PC1, BUT NOT FOR CLUSTER MEANS
-factor = 'PC1'
-env_factor = factor_df[[factor]].applymap(lambda x : x**2)
-df = run_tests(env_factor, test_single_interaction_lm, permute=permute)
-df['factor'] = factor
+# ### NOTE - NEEDS TO BE CENTERED. WORKS FOR PC1, BUT NOT FOR CLUSTER MEANS
+# factor = 'PC1'
+# env_factor = factor_df[[factor]].applymap(lambda x : x**2)
+# df = run_tests(env_factor, test_single_interaction_lm, permute=permute)
+# df['factor'] = factor
 
-quadratic_only_test_df = df.sort_values(by='pval')
+# quadratic_only_test_df = df.sort_values(by='pval')
 
-quadratic_only_test_df.to_csv(outfile_pattern.format(test_type='quadratic_only_test'), sep='\t')
-coef_df = quadratic_only_test_df.pivot(columns='factor')['coef']
-coef_df.to_csv(outfile_pattern.format(test_type='quadratic_only_test.coef_matrix'), sep='\t')
+# quadratic_only_test_df.to_csv(outfile_pattern.format(test_type='quadratic_only_test'), sep='\t')
+# coef_df = quadratic_only_test_df.pivot(columns='factor')['coef']
+# coef_df.to_csv(outfile_pattern.format(test_type='quadratic_only_test.coef_matrix'), sep='\t')
 
 
 # for each factor individually
+
+list_of_dfs = []
+
+for factor in factors_to_test:
+    env_factor = factor_df[[factor]]
+    df = run_tests(env_factor, test_single_interaction_lmm, permute=permute)
+    df['factor'] = factor
+    list_of_dfs.append(df)
+
+single_test_df = pd.concat(list_of_dfs).sort_values(by='pval')
+
+single_test_df.to_csv(outfile_pattern.format(test_type='single_factor_test_lmm'), sep='\t')
+coef_df = single_test_df.pivot(columns='factor')['coef']
+coef_df.to_csv(outfile_pattern.format(test_type='single_factor_test.coef_matrix'), sep='\t')
+
+
+
+
+
+
+
 
 list_of_dfs = []
 
@@ -274,7 +323,7 @@ coef_df.to_csv(outfile_pattern.format(test_type='multi_factor_test.coef_matrix')
 #### With pseudotime as the only covariate
 list_of_dfs = []
 
-covariate_factor = 'PC1'
+covariate_factor = 'pseudotime'
 
 for factor in [x for x in factors_to_test if x!=covariate_factor]:
     other_factors = [covariate_factor]
