@@ -10,6 +10,9 @@ import argparse
 import sys
 import corrall
 
+metadata_file = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/sce_merged_afterqc_filt_allexpts_metadata_20180618.tsv'
+metadata_df = pd.read_csv(metadata_file, sep='\t', index_col=0)
+
 # test_df = pd.read_csv('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase_env_interactions/combined_donor_tests/PC1.pearsonr.logcounts_all_107don_expt_defendo_leads.testrun.tsv', sep='\t', index_col=0)
 # test_df = test_df.query('n_cells>2').sort_values(by='pval')
 # gene_list = test_df.head(1000)['gene_id'].tolist()
@@ -61,7 +64,8 @@ qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
 qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
 qtl_df = qtl_df.head(50)
 
-
+allelic_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.chrBcount.phased.genelevel.tsv'
+total_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.totalcount.phased.genelevel.tsv'
 
 # qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_neuroseq/data/qtl_analysis/leads_to_test/top_qtl_results_all_primary_global_fdr0.05.txt'
 # qtl_file_short_name = 'all_hipsci_ipsc_bulk_leads'
@@ -77,7 +81,8 @@ qtl_df = qtl_df.head(50)
 
 
 # output file name
-outfile_prefix = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased'
+#outfile_prefix = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased'
+outfile_prefix = './tests/data/complete_ase_phased'
 outfile_template = '{prefix}.{datatype}.{qtl_file_short_name}.tsv'
 outfile_allelic_fractions = outfile_template.format(prefix=outfile_prefix,datatype='allelic_fractions',qtl_file_short_name=qtl_file_short_name)
 
@@ -86,50 +91,19 @@ outfile_allelic_fractions = outfile_template.format(prefix=outfile_prefix,dataty
 
 gene_list = qtl_df['ensembl_gene_id'].drop_duplicates().tolist()
 
-#subset donors
 
-n_extra_donors = 3000
+allelic_df = pd.read_csv(allelic_datafile, sep='\t', index_col=0)
+allelic_df = allelic_df.loc[gene_list, :]
+total_df = pd.read_csv(total_datafile, sep='\t', index_col=0)
+total_df = total_df.loc[gene_list, :]
 
-donor_list = ['HPSI0514i-puie_5','HPSI0214i-poih_4','HPSI0514i-letw_1','HPSI0813i-guss_1','HPSI0413i-nudd_1','HPSI1014i-sehl_6','HPSI0114i-joxm_1']
-with open('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/list_of_singlecell_endodiff_donors.tsv', 'r') as f:
-    extra_donors = [x.strip() for x in f.readlines()][:n_extra_donors]
-    donor_list.extend(extra_donors)
-
-donor_list = list(set(donor_list))[:]
-
-donor_list = ['HPSI1014i-sehl_6','HPSI0114i-joxm_1']
-
-# ase_df gives data for each gene, using phased SNP info to give proportion of expression from chrB
-
-donor2cell_dict = dict()
-
-
-for count_type in ['chrBcount','totalcount']:
-    df_list = []
-    for donor in donor_list[:]:
-        try:
-            filename = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/{donor}.ase.lowthresh.{count_type}.phased.genelevel.tsv'.format(donor=donor,count_type=count_type)
-            df = pd.read_csv(filename,sep='\t',index_col=0)
-            df = df.reindex(gene_list)
-            donor2cell_dict[donor] = list(df.columns)
-            df_list.append(df)
-        except:
-            print('No file for cell line {}'.format(donor))
-            pass
-    print('Combining data from {} cell lines'.format(len(df_list)))
-    df = pd.concat(df_list, axis=1)
-    if count_type=='totalcount':
-        total_df = df
-    else:
-        allelic_df = df
-
-# donor list is reduced to whatever we actually have data for
-donor_list = donor2cell_dict.keys()
 
 ase_df = allelic_df/total_df
 
-all_cells = list(ase_df.columns)
-
+all_cells = list(set(ase_df.columns) & set(metadata_df.index))
+metadata_df = metadata_df.loc[all_cells, :]
+donor_list = metadata_df['donor_long_id'].drop_duplicates().tolist()
+donor2cell_dict = dict([(x,metadata_df.query('donor_long_id==@x').index) for x in donor_list])
 
 # gene list is reduced to whatever we actually have data for
 gene_list = list(ase_df.index)
