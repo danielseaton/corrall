@@ -49,6 +49,20 @@ qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
 
 
 
+qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
+qtl_file_short_name = 'testing_example'
+qtl_df = pd.read_csv(qtl_filename,sep='\t')
+qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
+#process for het phasing
+qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
+qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
+# sort low to high by p-value
+qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
+qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
+qtl_df = qtl_df.head(50)
+
+
+
 # qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_neuroseq/data/qtl_analysis/leads_to_test/top_qtl_results_all_primary_global_fdr0.05.txt'
 # qtl_file_short_name = 'all_hipsci_ipsc_bulk_leads'
 # qtl_df = pd.read_csv(qtl_filename, sep='\t')
@@ -62,18 +76,10 @@ qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
 # #qtl_df = qtl_df.head(10)
 
 
-# qtl_filename = '/nfs/leia/research/stegle/acuomo/mean_day3_chr1/logcounts_all_107don_expt_defendo_leads/top_qtl_results_all.txt'
-# qtl_file_short_name = os.path.basename(os.path.dirname(qtl_filename))
-# qtl_df = pd.read_csv(qtl_filename,sep='\t')
-# qtl_df = qtl_df.set_index('ensembl_gene_id', drop=False)
-# qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
-# #qtl_df = qtl_df.query('empirical_feature_p_value < 0.00001')
-# # sort low to high by p-value
-# qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
-# qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id'])
-
-#qtl_df = qtl_df.loc[gene_list,:].dropna(how='all')
-
+# output file name
+outfile_prefix = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased'
+outfile_template = '{prefix}.{datatype}.{qtl_file_short_name}.tsv'
+outfile_allelic_fractions = outfile_template.format(prefix=outfile_prefix,datatype='allelic_fractions',qtl_file_short_name=qtl_file_short_name)
 
 
 #get list of genes to be evaluated
@@ -91,6 +97,7 @@ with open('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/lis
 
 donor_list = list(set(donor_list))[:]
 
+donor_list = ['HPSI1014i-sehl_6','HPSI0114i-joxm_1']
 
 # ase_df gives data for each gene, using phased SNP info to give proportion of expression from chrB
 
@@ -168,4 +175,4 @@ def phase_data_for_gene(gene_name,snp_id):
 
 new_phased_ase_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: phase_data_for_gene(x['ensembl_gene_id'],x['snp_id']), axis=1)
 
-new_phased_ase_df.to_csv('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased.{}.tsv'.format(qtl_file_short_name), sep='\t')
+new_phased_ase_df.to_csv(outfile_allelic_fractions, sep='\t')
