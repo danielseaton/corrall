@@ -6,6 +6,7 @@ import scipy.stats
 import random
 import argparse
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
 from sklearn import decomposition
 from itertools import combinations
 
@@ -102,17 +103,18 @@ def test_single_interaction_lmm(ase_data, env_factor, permute=False):
     assert(not permute)
     output = pd.Series(index=['coef','pval','n_cells'])
     ase_data.name = 'ASE'
-    env_factor.name = 'factor'
+    env_factor.columns = ['factor']
     try:
         data = pd.concat([env_factor,donor_data,ase_data],axis=1,join='inner').dropna()
         n_cells = data.shape[0]
-        md = smf.mixedlm("ASE ~ pseudotime", data, groups=data["donor"])
+        md = smf.mixedlm("ASE ~ factor", data, groups=data["donor"])
         mdf = md.fit()
         pval = mdf.pvalues['factor']
         coef = mdf.params['factor']
-        output['n_cells'] = n_cells
-        output['coef'] = coef
-        output['pval'] = pval
+        if mdf.converged:
+            output['n_cells'] = n_cells
+            output['coef'] = coef
+            output['pval'] = pval
     except:
         pass
     return output
@@ -258,12 +260,11 @@ for factor in factors_to_test:
     df['factor'] = factor
     list_of_dfs.append(df)
 
-single_test_df = pd.concat(list_of_dfs).sort_values(by='pval')
+single_test_lmm_df = pd.concat(list_of_dfs).sort_values(by='pval')
 
-single_test_df.to_csv(outfile_pattern.format(test_type='single_factor_test_lmm'), sep='\t')
-coef_df = single_test_df.pivot(columns='factor')['coef']
+single_test_lmm_df.to_csv(outfile_pattern.format(test_type='single_factor_test_lmm'), sep='\t')
+coef_df = single_test_lmm_df.pivot(columns='factor')['coef']
 coef_df.to_csv(outfile_pattern.format(test_type='single_factor_test.coef_matrix'), sep='\t')
-
 
 
 
