@@ -38,22 +38,9 @@ metadata_df = pd.read_csv(metadata_file, sep='\t', index_col=0)
 
 
 
-# qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
-# qtl_file_short_name = 'all_leads'
-# qtl_df = pd.read_csv(qtl_filename,sep='\t')
-# qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
-# #process for het phasing
-# qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
-# qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
-# # sort low to high by p-value
-# qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
-# qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
-# # qtl_df = qtl_df.head(40)
-
-
-
 qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
-qtl_file_short_name = 'testing_example'
+qtl_file_short_name = 'all_leads'
+outfile_prefix = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased'
 qtl_df = pd.read_csv(qtl_filename,sep='\t')
 qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
 #process for het phasing
@@ -62,7 +49,22 @@ qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
 # sort low to high by p-value
 qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
 qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
-qtl_df = qtl_df.head(50)
+# qtl_df = qtl_df.head(40)
+
+
+
+# qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
+# qtl_file_short_name = 'testing_example'
+# outfile_prefix = './tests/data/complete_ase_phased'
+# qtl_df = pd.read_csv(qtl_filename,sep='\t')
+# qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
+# #process for het phasing
+# qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
+# qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
+# # sort low to high by p-value
+# qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
+# qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
+# qtl_df = qtl_df.head(50)
 
 allelic_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.chrBcount.phased.genelevel.tsv'
 total_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.totalcount.phased.genelevel.tsv'
@@ -81,8 +83,6 @@ total_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processe
 
 
 # output file name
-#outfile_prefix = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/ase/complete_ase_phased'
-outfile_prefix = './tests/data/complete_ase_phased'
 outfile_template = '{prefix}.{datatype}.{qtl_file_short_name}.tsv'
 outfile_allelic_fractions = outfile_template.format(prefix=outfile_prefix,datatype='allelic_fractions',qtl_file_short_name=qtl_file_short_name)
 outfile_allelic_counts = outfile_template.format(prefix=outfile_prefix,datatype='allelic_counts',qtl_file_short_name=qtl_file_short_name)
@@ -165,5 +165,5 @@ new_phased_ase_df = new_phased_allelic_df/new_phased_total_df
 if outfile_type in ['counts', 'all']:
     new_phased_total_df.to_csv(outfile_total_counts, sep='\t')
     new_phased_allelic_df.to_csv(outfile_allelic_counts, sep='\t')
-elif outfile_type in ['fractions', 'all']:
+if outfile_type in ['fractions', 'all']:
     new_phased_ase_df.to_csv(outfile_allelic_fractions, sep='\t')
