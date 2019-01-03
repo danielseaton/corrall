@@ -16,4 +16,5 @@ if allow_partial_index_match:
     new_df = new_df[shared_cells]
 
 max_diff = (new_df - saved_df).abs().max().max()
+print('Max difference = {}'.format(max_diff))
 assert(max_diff < 1e-12)

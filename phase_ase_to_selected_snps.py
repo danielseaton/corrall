@@ -117,7 +117,9 @@ snp_phase_df = corrall.vcf_utils.get_het_snp_phase_dataframe(snp_df, donor_list)
 
 
 
-def phase_data_for_gene(gene_name, snp_id):
+def phase_allelic_data(gene_name, snp_id, datatype):
+    if datatype not in ['alleliccount', 'totalcount']:
+        raise ValueError
     phasing_data = snp_phase_df.loc[(gene_name,snp_id), :].dropna()
 
     #subset to heterozygous donors
@@ -145,9 +147,17 @@ def phase_data_for_gene(gene_name, snp_id):
             # ASE is already phased to the selected SNP
             pass
 
-    return allelic_data/total_data
+    if datatype=='alleliccount':
+        return allelic_data
+    elif datatype=='totalcount':
+        return total_data
 
 
-new_phased_ase_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: phase_data_for_gene(x['ensembl_gene_id'],x['snp_id']), axis=1)
+new_phased_allelic_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: phase_allelic_data(x['ensembl_gene_id'], x['snp_id'], 'alleliccount'), axis=1)
 
+new_phased_total_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: phase_allelic_data(x['ensembl_gene_id'], x['snp_id'], 'totalcount'), axis=1)
+
+
+
+new_phased_ase_df = new_phased_allelic_df/new_phased_total_df
 new_phased_ase_df.to_csv(outfile_allelic_fractions, sep='\t')
