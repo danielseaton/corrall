@@ -35,17 +35,17 @@ import corrall
 
 
 
-qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
-qtl_file_short_name = 'all_leads'
-qtl_df = pd.read_csv(qtl_filename,sep='\t')
-qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
-#process for het phasing
-qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
-qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
-# sort low to high by p-value
-qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
-qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
-# qtl_df = qtl_df.head(40)
+# qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
+# qtl_file_short_name = 'all_leads'
+# qtl_df = pd.read_csv(qtl_filename,sep='\t')
+# qtl_df['ensembl_gene_id'] = qtl_df['feature'].apply(lambda x: x.split('_')[0])
+# #process for het phasing
+# qtl_df = qtl_df.set_index(['ensembl_gene_id','snp_id'], drop=False)
+# qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
+# # sort low to high by p-value
+# qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
+# qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
+# # qtl_df = qtl_df.head(40)
 
 
 
