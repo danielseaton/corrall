@@ -85,7 +85,10 @@ total_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processe
 outfile_prefix = './tests/data/complete_ase_phased'
 outfile_template = '{prefix}.{datatype}.{qtl_file_short_name}.tsv'
 outfile_allelic_fractions = outfile_template.format(prefix=outfile_prefix,datatype='allelic_fractions',qtl_file_short_name=qtl_file_short_name)
+outfile_allelic_counts = outfile_template.format(prefix=outfile_prefix,datatype='allelic_counts',qtl_file_short_name=qtl_file_short_name)
+outfile_total_counts = outfile_template.format(prefix=outfile_prefix,datatype='total_counts',qtl_file_short_name=qtl_file_short_name)
 
+outfile_type = 'all'
 
 #get list of genes to be evaluated
 
@@ -157,7 +160,10 @@ new_phased_allelic_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: pha
 
 new_phased_total_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: phase_allelic_data(x['ensembl_gene_id'], x['snp_id'], 'totalcount'), axis=1)
 
-
-
 new_phased_ase_df = new_phased_allelic_df/new_phased_total_df
-new_phased_ase_df.to_csv(outfile_allelic_fractions, sep='\t')
+
+if outfile_type in ['counts', 'all']:
+    new_phased_total_df.to_csv(outfile_total_counts, sep='\t')
+    new_phased_allelic_df.to_csv(outfile_allelic_counts, sep='\t')
+elif outfile_type in ['fractions', 'all']:
+    new_phased_ase_df.to_csv(outfile_allelic_fractions, sep='\t')
