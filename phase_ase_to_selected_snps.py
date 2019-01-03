@@ -117,7 +117,7 @@ snp_phase_df = corrall.vcf_utils.get_het_snp_phase_dataframe(snp_df, donor_list)
 
 
 
-def phase_data_for_gene(gene_name,snp_id):
+def phase_data_for_gene(gene_name, snp_id):
     phasing_data = snp_phase_df.loc[(gene_name,snp_id), :].dropna()
 
     #subset to heterozygous donors
@@ -126,25 +126,26 @@ def phase_data_for_gene(gene_name,snp_id):
     selected_cells = [donor2cell_dict[x] for x in het_donors]
     selected_cells = [x for y in selected_cells for x in y]
     
-
-    ase_data = ase_df.loc[gene_name, all_cells]
+    allelic_data = allelic_df.loc[gene_name, all_cells]
+    total_data = total_df.loc[gene_name, all_cells]
 
     # set ASE for cells from homozygous donors to NaN
     cells_to_drop = [x for x in all_cells if x not in selected_cells]
-    ase_data.loc[cells_to_drop] = np.nan
+    allelic_data.loc[cells_to_drop] = np.nan
+    total_data.loc[cells_to_drop] = np.nan
 
     # flip data for the relevant cells
     for donor in het_donors:
         cells = donor2cell_dict[donor]
         phase = phasing_data.loc[donor]
         if phase == 0:
-            # phase ASE to the selected SNP
-            ase_data.loc[cells] = ase_data.loc[cells].apply(lambda x: 1.0-x)
+            # phase ASE to the selected SNP by swapping phase
+            allelic_data.loc[cells] = total_data.loc[cells] - allelic_data.loc[cells]
         elif phase == 1:
             # ASE is already phased to the selected SNP
             pass
 
-    return ase_data
+    return allelic_data/total_data
 
 
 new_phased_ase_df = snp_df[['ensembl_gene_id','snp_id']].apply(lambda x: phase_data_for_gene(x['ensembl_gene_id'],x['snp_id']), axis=1)
