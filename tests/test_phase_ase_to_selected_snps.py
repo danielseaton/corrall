@@ -6,8 +6,8 @@ saved_output = new_output+'.saved'
 
 allow_partial_index_match = False
 
-new_df = pd.read_csv(new_output, sep='\t')
-saved_df = pd.read_csv(saved_output, sep='\t')
+new_df = pd.read_csv(new_output, sep='\t', index_col=[0,1])
+saved_df = pd.read_csv(saved_output, sep='\t', index_col=[0,1])
 
 
 if allow_partial_index_match:
@@ -15,4 +15,5 @@ if allow_partial_index_match:
     saved_df = saved_df[shared_cells]
     new_df = new_df[shared_cells]
 
-assert(new_df.equals(saved_df))
+max_diff = (new_df - saved_df).abs().max().max()
+assert(max_diff < 1e-12)
