@@ -9,6 +9,29 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from sklearn import decomposition
 from itertools import combinations
+import limix
+
+def test_interaction_limix_glmm(alt_data, total_data, env_factor, permute=False):
+    output = pd.Series(index=['coeff','pval','n_cells'])
+    cells = list(set(env_factor.index) & set(alt_data.dropna().index))
+    successes = alt_data.loc[cells].values
+    trials = total_data.loc[cells].values
+    y = (successes, trials)
+    exog = env_factor.loc[cells].values.reshape((len(cells),1))
+    if permute:
+        permuted_cells = [x for x in cells]
+        random.shuffle(permuted_cells)
+        exog = env_factor.loc[permuted_cells].values.reshape((len(permuted_cells),1))
+#    try:
+    glm = limix.qtl.glmm.qtl_test_glmm(exog, y, lik='binomial', K=np.identity(len(cells)), verbose=False)
+    pval = glm.getPv()[0]
+    coeff = glm.getBetaSNP()[0]
+    output['n_cells'] = len(cells)
+    output['coeff'] = coeff
+    output['pval'] = pval
+#    except:
+#        pass
+    return output
 
 
 def test_single_interaction_lmm(ase_data, env_factor, permute=False):
@@ -135,27 +158,6 @@ def test_combined_interaction_lm(ase_data, env_factor, permute=False):
         pass
     return output
 
-def test_interaction_limix_glmm(alt_data, total_data, env_factor, permute=False):
-    output = pd.Series(index=['coeff','pval','n_cells'])
-    cells = list(set(env_factor.index) & set(alt_data.dropna().index))
-    successes = alt_data.loc[cells].values
-    trials = total_data.loc[cells].values
-    y = (successes, trials)
-    exog = env_factor.loc[cells].values.reshape((len(cells),1))
-    if permute:
-        permuted_cells = [x for x in cells]
-        random.shuffle(permuted_cells)
-        exog = env_factor.loc[permuted_cells].values.reshape((len(permuted_cells),1))
-    try:
-        glm = limix.qtl.glmm.qtl_test_glmm(exog, y, lik='binomial', K=np.identity(len(cells)), verbose=False)
-        pval = glm.getPv()[0]
-        coeff = glm.getBetaSNP()[0]
-        output['n_cells'] = len(cells)
-        output['coeff'] = coeff
-        output['pval'] = pval
-    except:
-        pass
-    return output
 
 
 def run_tests(ase_df, env_factor, test_fcn, permute=False):
