@@ -52,9 +52,9 @@ def test_interaction_limix_glmm(alt_data, total_data, env_factor, permute=False)
         random.shuffle(permuted_cells)
         exog = env_factor.loc[permuted_cells].values.reshape((len(permuted_cells),1))
 #    try:
-    glm = limix.qtl.glmm.qtl_test_glmm(exog, y, lik='binomial', K=np.identity(len(cells)), verbose=False)
-    pval = glm.getPv()[0]
-    coeff = glm.getBetaSNP()[0]
+    model = limix.qtl.st_scan(exog, successes, ('binomial', trials), K=None, verbose=False)    
+    pval = model.variant_pvalues[0]
+    coeff = model.variant_effsizes[0]
     output['n_cells'] = len(cells)
     output['coeff'] = coeff
     output['pval'] = pval
