@@ -39,6 +39,17 @@ def get_model_dataframes(ase_ds, factor_df, factor, covariate_factors):
     
     return y_ds, candidate_ds, covariate_df
 
+def test_limix_lmm(y_ds, candidate_ds, covariate_df, random_effect_df=None):
+    model = limix.qtl.st_scan(candidate_ds, y_ds, lik='normal', K=random_effect_df, M=covariate_df, verbose=False)    
+    pval = model.variant_pvalues[0]
+    coeff = model.variant_effsizes[0]
+    
+    output = pd.Series(index=['coeff','pval','n_cells'])
+    output['n_cells'] = candidate_ds.shape[0]
+    output['coeff'] = coeff
+    output['pval'] = pval
+    return output
+
 
 def test_interaction_limix_glmm(alt_data, total_data, env_factor, permute=False):
     output = pd.Series(index=['coeff','pval','n_cells'])

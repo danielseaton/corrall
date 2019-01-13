@@ -66,5 +66,7 @@ covariate_factors = []
 
 y_ds, candidate_ds, covariate_df = statistical_models.get_model_dataframes(ase_ds, factor_df, factor, covariate_factors)
 
+output = statistical_models.test_limix_lmm(y_ds, candidate_ds, covariate_df)
+
 model = limix.qtl.st_scan(candidate_ds, y_ds, lik='normal', M=covariate_df.values, verbose=False)
 print(model.variant_pvalues)
