@@ -10,6 +10,35 @@ import statsmodels.formula.api as smf
 from sklearn import decomposition
 from itertools import combinations
 import limix
+import patsy
+
+
+def get_model_dataframes(ase_ds, factor_df, factor, covariate_factors):
+    '''This function takes allelic data and a dataframe of factors/covariates, 
+    along with strings specifying the factor to be tested and the covariates 
+    to be accounted for as fixed effects.'''
+    
+    for element in covariate_factors + [factor]:
+        if '*' in element:
+            raise(ValueError(''' Error in specifying input factors and covariates:\n'''
+                             ''' Use "a:b" notation rather than "a*b" notation to denote interaction terms, \n'''
+                             ''' and include any individual terms as desired (e.g. "a:b + a + b" for the \n'''
+                             ''' interactions and both individual terms). '''))
+    
+    ase_ds.name = 'ASE'
+    
+    # convert arguments into a formula, and convert that into a dataframe for general use
+    formula = ' ASE ~ {}'.format(' + '.join([factor]+covariate_factors))
+    
+    # join dataframes, aligning indices
+    df = factor_df.join(ase_ds, how='inner')
+    
+    y_ds, model_df = patsy.dmatrices(formula, df, return_type='dataframe')
+    candidate_ds = model_df[factor]
+    covariate_df = model_df[[x for x in model_df.columns if x!=factor]]
+    
+    return y_ds, candidate_ds, covariate_df
+
 
 def test_interaction_limix_glmm(alt_data, total_data, env_factor, permute=False):
     output = pd.Series(index=['coeff','pval','n_cells'])
