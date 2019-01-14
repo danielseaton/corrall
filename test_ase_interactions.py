@@ -6,41 +6,32 @@ import patsy
 import limix
 import loader_utils
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument('--factor', '-f',
-#                     help='Name of factor to test.')
-# parser.add_argument('--covariates', '-cv', nargs='+', default=[],
-#                     help='List of covariates to be accounted for.')
-# parser.add_argument('--random_effect', '-cv', default=None,
-#                     help='Name of random effect to be modelled.')
-# parser.add_argument('--gene_id', '-g', type=str)
-# parser.add_argument('--snp_id', '-s', type=str)
-# parser.add_argument('--outfile_prefix', '-o', type=str)
-# args = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument('--factor', '-f',
+                    help='Name of factor to test.')
+parser.add_argument('--covariates', '-cv', nargs='+', default=[],
+                    help='List of covariates to be accounted for.')
+parser.add_argument('--random_effect', '-re', default=None,
+                    help='Name of random effect to be modelled.')
+parser.add_argument('--gene_id', '-g', type=str)
+parser.add_argument('--snp_id', '-s', type=str)
+parser.add_argument('--outfile_prefix', '-o', type=str)
+args = parser.parse_args()
 
-
-
-gene_id, snp_id = 'ENSG00000170291','17_7151111_A_C'
-
-#datafiles
-# total counts
-# allelic counts
-# ase fractions
-# factor dataframe
-# cell metadata
-
-#parameters
-# factor name
-# covariate factor names
-# min_n_cells
-# SNP/gene name(s)/feature variant filter
+factor = args.factor
+covariates = args.covariates
+random_effect = args.random_effect
+gene_id = args.gene_id
+snp_id = args.snp_id
+outfile_prefix = args.outfile_prefix
 
 min_n_cells = 50
 
-n_genes = 20
-
 ase_short_name = 'all_leads'
 n_index_cols = 2
+
+
+qtl_list = [(gene_id, snp_id)]
 
 
 working_dir = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff'
@@ -50,43 +41,18 @@ allelicfractions_file = working_dir + '/data/ase/complete_ase_phased.allelic_fra
 totalcounts_file = working_dir + '/data/ase/complete_ase_phased.total_counts.all_leads.tsv'
 
 factor_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts_pseudotimeandmodules_20180618.tsv'
-outfile_pattern = working_dir + '/data/ase_env_interactions/pseudotimeandmodules.{test_type}.'+ase_short_name+'.tsv'
+outfile_name = '{outfile_prefix}.ase_interaction_results.{gene_id}.{snp_id}.tsv'.format(outfile_prefix=outfile_prefix,
+                                                                                        gene_id=gene_id,
+                                                                                        snp_id=snp_id)
 metadata_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts_metadata_20180618.tsv'
 
-
 metadata_df = pd.read_csv(metadata_file, sep='\t', index_col=0)
-#allelic_df = loader_utils.read_csv_by_idx(alleliccounts_file, sep='\t', idx_list=[(gene_id, snp_id)], index_col=list(range(n_index_cols)), nrows=n_genes)
-#total_df = loader_utils.read_csv_by_idx(totalcounts_file, sep='\t', idx_list=[(gene_id, snp_id)], index_col=list(range(n_index_cols)), nrows=n_genes)
-ase_df = loader_utils.read_csv_by_idx(allelicfractions_file, idx_list=[(gene_id, snp_id)], sep='\t', index_col=list(range(n_index_cols)), nrows=n_genes)
+#allelic_df = loader_utils.read_csv_by_idx(alleliccounts_file, sep='\t', idx_list=qtl_list, index_col=list(range(n_index_cols)))
+#total_df = loader_utils.read_csv_by_idx(totalcounts_file, sep='\t', idx_list=qtl_list, index_col=list(range(n_index_cols)))
+ase_df = loader_utils.read_csv_by_idx(allelicfractions_file, idx_list=qtl_list, sep='\t', index_col=list(range(n_index_cols)))
 factor_df = pd.read_csv(factor_file, sep='\t', index_col=0)
 
-
-# qtl_list = [('ENSG00000233927', '19_8387207_G_A')]
-# allelic_df = allelic_df.loc[qtl_list, :]
-# total_df = total_df.loc[qtl_list, :]
-# ase_df = ase_df.loc[qtl_list, :]
-
-qtl_list = [(gene_id, snp_id)]
-#qtl_list = list(ase_df.index)[10:11]
-
-if qtl_list is None:
-    qtl_list = ase_df.index
-
-factor = 'pseudotime'
-covariate_factors = []
-
-# factor = 'respiration'
-# covariate_factors = []
-
-# factor = 'respiration'
-# covariate_factors = ['pseudotime']
-
 list_of_outputs = []
-
-
-random_effect = None
-#random_effect = 'donor_long_id'
-
 
 for ase_idx in qtl_list[:]:
     ase_ds = ase_df.loc[ase_idx, :].dropna()
@@ -94,7 +60,7 @@ for ase_idx in qtl_list[:]:
     if ase_ds.shape[0]< min_n_cells:
         continue
 
-    y_ds, candidate_ds, covariate_df = statistical_models.get_model_dataframes(ase_ds, factor_df, factor, covariate_factors)
+    y_ds, candidate_ds, covariate_df = statistical_models.get_model_dataframes(ase_ds, factor_df, factor, covariates)
     
     if random_effect is not None:
         dummy_df = pd.get_dummies(metadata_df.loc[y_ds.index, random_effect])
@@ -109,7 +75,12 @@ for ase_idx in qtl_list[:]:
     
     list_of_outputs.append(output_ds)
 
-output_df = pd.concat(list_of_outputs, axis=1).transpose()
-output_df['factor'] = factor
-output_df['covariates'] = ', '.join(covariate_factors)
-output_df['random_effect'] = random_effect
+if len(list_of_outputs)>0:
+    output_df = pd.concat(list_of_outputs, axis=1).transpose()
+    output_df['factor'] = factor
+    output_df['covariates'] = ', '.join(covariates)
+    output_df['random_effect'] = random_effect
+    output_df.to_csv(outfile_name, sep='\t')
+else:
+    with open(outfile_name, 'w') as f:
+        f.write('')
