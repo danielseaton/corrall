@@ -36,7 +36,8 @@ metadata_df = pd.read_csv(metadata_file, sep='\t', index_col=0)
 # qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id'])
 
 
-
+allelic_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/all_donors.ase.lowthresh.chrBcount.phased.genelevel.tsv'
+total_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/all_donors.ase.lowthresh.totalcount.phased.genelevel.tsv'
 
 qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
 qtl_file_short_name = 'all_leads'
@@ -49,9 +50,11 @@ qtl_df = qtl_df.rename(columns={'snp_chromosome':'chrom','snp_position':'pos'})
 # sort low to high by p-value
 qtl_df = qtl_df.sort_values(by='empirical_feature_p_value')
 qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
-# qtl_df = qtl_df.head(40)
+#qtl_df = qtl_df.head(5)
 
 
+# allelic_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.chrBcount.phased.genelevel.tsv'
+# total_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.totalcount.phased.genelevel.tsv'
 
 # qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/qtl_results/all_results_combined.for_snp_annotation.tsv'
 # qtl_file_short_name = 'testing_example'
@@ -66,8 +69,6 @@ qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
 # qtl_df = qtl_df.drop_duplicates(subset=['ensembl_gene_id','snp_id'])
 # qtl_df = qtl_df.head(50)
 
-allelic_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.chrBcount.phased.genelevel.tsv'
-total_datafile = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.totalcount.phased.genelevel.tsv'
 
 # qtl_filename = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_neuroseq/data/qtl_analysis/leads_to_test/top_qtl_results_all_primary_global_fdr0.05.txt'
 # qtl_file_short_name = 'all_hipsci_ipsc_bulk_leads'
