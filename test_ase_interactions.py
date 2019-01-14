@@ -15,7 +15,7 @@ parser.add_argument('--random_effect', '-re', default=None,
                     help='Name of random effect to be modelled.')
 parser.add_argument('--gene_id', '-g', type=str)
 parser.add_argument('--snp_id', '-s', type=str)
-parser.add_argument('--outfile_prefix', '-o', type=str)
+parser.add_argument('--outfile', '-o', type=str)
 args = parser.parse_args()
 
 factor = args.factor
@@ -23,7 +23,7 @@ covariates = args.covariates
 random_effect = args.random_effect
 gene_id = args.gene_id
 snp_id = args.snp_id
-outfile_prefix = args.outfile_prefix
+outfile = args.outfile
 
 min_n_cells = 50
 
@@ -41,9 +41,6 @@ allelicfractions_file = working_dir + '/data/ase/complete_ase_phased.allelic_fra
 totalcounts_file = working_dir + '/data/ase/complete_ase_phased.total_counts.all_leads.tsv'
 
 factor_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts_pseudotimeandmodules_20180618.tsv'
-outfile_name = '{outfile_prefix}.ase_interaction_results.{gene_id}.{snp_id}.tsv'.format(outfile_prefix=outfile_prefix,
-                                                                                        gene_id=gene_id,
-                                                                                        snp_id=snp_id)
 metadata_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts_metadata_20180618.tsv'
 
 metadata_df = pd.read_csv(metadata_file, sep='\t', index_col=0)
@@ -82,5 +79,5 @@ if len(list_of_outputs)>0:
     output_df['random_effect'] = random_effect
     output_df.to_csv(outfile_name, sep='\t')
 else:
-    with open(outfile_name, 'w') as f:
+    with open(outfile, 'w') as f:
         f.write('')
