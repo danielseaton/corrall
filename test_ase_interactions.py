@@ -18,7 +18,7 @@ import limix
 # min_n_cells
 # SNP/gene name(s)/feature variant filter
 
-n_genes = 5
+n_genes = 20
 
 ase_short_name = 'all_leads'
 n_index_cols = 2
@@ -36,6 +36,7 @@ outfile_pattern = working_dir + '/data/ase_env_interactions/pseudotimeandmodules
 metadata_file = working_dir + '/data/sce_merged_afterqc_filt_allexpts_metadata_20180618.tsv'
 
 
+metadata_df = pd.read_csv(metadata_file, sep='\t', index_col=0)
 allelic_df = pd.read_csv(alleliccounts_file, sep='\t', index_col=list(range(n_index_cols)), nrows=n_genes)
 total_df = pd.read_csv(totalcounts_file, sep='\t', index_col=list(range(n_index_cols)), nrows=n_genes)
 ase_df = pd.read_csv(allelicfractions_file, sep='\t', index_col=list(range(n_index_cols)), nrows=n_genes)
@@ -46,6 +47,8 @@ factor_df = pd.read_csv(factor_file, sep='\t', index_col=0)
 # allelic_df = allelic_df.loc[qtl_list, :]
 # total_df = total_df.loc[qtl_list, :]
 # ase_df = ase_df.loc[qtl_list, :]
+
+qtl_list = None
 
 if qtl_list is None:
     qtl_list = ase_df.index
@@ -61,17 +64,30 @@ covariate_factors = []
 
 list_of_outputs = []
 
-for ase_idx in qtl_list:
-    ase_ds = ase_df.loc[ase_idx, :].dropna()
 
+#random_effect = None
+random_effect = 'donor_long_id'
+
+
+for ase_idx in qtl_list[:]:
+    ase_ds = ase_df.loc[ase_idx, :].dropna()
+    
     if ase_ds.shape[0]< min_n_cells:
         continue
-    
+
     y_ds, candidate_ds, covariate_df = statistical_models.get_model_dataframes(ase_ds, factor_df, factor, covariate_factors)
     
-    output_ds = statistical_models.test_limix_lmm(y_ds, candidate_ds, covariate_df)
+    if random_effect is not None:
+        dummy_df = pd.get_dummies(metadata_df.loc[y_ds.index, random_effect])
+        if dummy_df.shape[1]<2:
+            K = None
+        K = np.dot(dummy_df.values, dummy_df.values.T)
+    else:
+        K = None
+    
+    output_ds = statistical_models.test_limix_lmm(y_ds, candidate_ds, covariate_df, K)
     output_ds.name = ase_idx
-
+    
     list_of_outputs.append(output_ds)
 
 output_df = pd.concat(list_of_outputs, axis=1).transpose()
