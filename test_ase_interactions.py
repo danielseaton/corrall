@@ -77,7 +77,7 @@ if len(list_of_outputs)>0:
     output_df['factor'] = factor
     output_df['covariates'] = ', '.join(covariates)
     output_df['random_effect'] = random_effect
-    output_df.to_csv(outfile_name, sep='\t')
+    output_df.to_csv(outfile, sep='\t')
 else:
     with open(outfile, 'w') as f:
         f.write('')
