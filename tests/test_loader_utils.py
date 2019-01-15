@@ -1,4 +1,5 @@
-import loader_utils
+import pandas as pd
+from context import loader_utils
 
 
 working_dir = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff'
@@ -23,3 +24,5 @@ df1 = factor_df.loc[selected_rows, :]
 
 df2 = loader_utils.read_csv_by_idx(factor_file, idx_list=selected_rows, chunksize=500, sep='\t', index_col=0)
 df2 = df2.loc[df1.index, :]
+
+assert((df1==df2).all().all())
