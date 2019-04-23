@@ -7,14 +7,14 @@ DONOR=$1
 DONORMAPPINGFILE='/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/sce_merged_afterqc_filt_allexpts_metadata_20180618.mapping_donors_to_ase_files.tsv'
 
 
-OUTDIR='/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor'
+OUTDIR='/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/'
 
-TOTAL='/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/'$DONOR'.ase.lowthresh.totalcount.tsv'
-ALT='/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/'$DONOR'.ase.lowthresh.altcount.tsv'
-SNPINFO='/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/'$DONOR'.ase.lowthresh.snp_info.tsv'
+TOTAL=$OUTDIR$DONOR'.ase.lowthresh.totalcount.tsv'
+ALT=$OUTDIR$DONOR'.ase.lowthresh.altcount.tsv'
+SNPINFO=$OUTDIR$DONOR'.ase.lowthresh.snp_info.tsv'
 
-TOTAL2='/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/'$DONOR'.ase.lowthresh.totalcount.phased.tsv'
-ALT2='/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/'$DONOR'.ase.lowthresh.chrBcount.phased.tsv'
+TOTAL2=$OUTDIR$DONOR'.ase.lowthresh.totalcount.phased.tsv'
+ALT2=$OUTDIR$DONOR'.ase.lowthresh.chrBcount.phased.tsv'
 
 GENEBED='/nfs/leia/research/stegle/dseaton/genomes/hg19/annotation/Homo_sapiens.GRCh37.75.exons.genenames.bed'
 
