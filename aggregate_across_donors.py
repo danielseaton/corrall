@@ -1,25 +1,22 @@
 import pandas as pd
 
-input_filename_template = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/{donor}.ase.lowthresh.{count_type}.phased.genelevel.tsv'
+#input_filename_template = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/ase_aggregated_by_donor/{donor}.ase.lowthresh.{count_type}.phased.genelevel.tsv'
+#output_filename_template = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/all_donors.ase.lowthresh.{count_type}.phased.genelevel.tsv'
+#donor_list_file = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/list_of_singlecell_endodiff_donors.tsv'
+
+input_filename_template = '/hps/nobackup/hipsci/scratch/singlecell_fibroblast/Data/SS2_2017/data_processed/ase/ase_aggregated_by_donor/{donor}.ase.lowthresh.{count_type}.phased.genelevel.tsv'
+output_filename_template = '/hps/nobackup/hipsci/scratch/singlecell_fibroblast/Data/SS2_2017/data_processed/ase/all_donors.ase.lowthresh.{count_type}.phased.genelevel.tsv'
+donor_list_file = '/nfs/leia/research/stegle/dseaton/hipsci/singlecell_fibroblast/data/list_of_all_singlecell_fibroblast_lines.tsv'
 
 #subset donors
 
-n_extra_donors = 3000
-
-donor_list = ['HPSI0514i-puie_5','HPSI0214i-poih_4','HPSI0514i-letw_1','HPSI0813i-guss_1','HPSI0413i-nudd_1','HPSI1014i-sehl_6','HPSI0114i-joxm_1']
-with open('/nfs/leia/research/stegle/dseaton/hipsci/singlecell_endodiff/data/list_of_singlecell_endodiff_donors.tsv', 'r') as f:
-    extra_donors = [x.strip() for x in f.readlines()][:n_extra_donors]
+n_donors = 3000
+donor_list = []
+with open(donor_list_file, 'r') as f:
+    extra_donors = [x.strip() for x in f.readlines()][:n_donors]
     donor_list.extend(extra_donors)
 
 donor_list = list(set(donor_list))[:]
-
-output_filename_template = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/all_donors.ase.lowthresh.{count_type}.phased.genelevel.tsv'
-
-
-
-#donor_list = ['HPSI1014i-sehl_6','HPSI0114i-joxm_1']
-#output_filename_template = '/hps/nobackup/hipsci/scratch/singlecell_endodiff/data_processed/ase/test_subset_of_donors.ase.lowthresh.{count_type}.phased.genelevel.tsv'
-
 
 
 # ase_df gives data for each gene, using phased SNP info to give proportion of expression from chrB
