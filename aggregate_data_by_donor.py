@@ -7,7 +7,8 @@ import re
 import collections
 from datetime import datetime
 import argparse
-import plink_utils
+#import plink_utils
+import vcf_utils
 
 parser = argparse.ArgumentParser(description='Collect data for all samples from a particular individual.')
 parser.add_argument('donor_id', help='donor ID, to match format from the donor_id column in donor_id_mapping_file')
@@ -62,7 +63,7 @@ for filename in filelist[:]:
         counter_dict[vid] += 1
             
 selected_snps = [x for x in counter_dict if counter_dict[x]>count_threshold]
-selected_snps = plink_utils.filter_to_het_snps(selected_snps, donor_id)
+selected_snps = vcf_utils.filter_to_het_snps(selected_snps, donor_id)
 
 print('{} SNPs selected of {}'.format(len(selected_snps),len(counter_dict.keys())))
 

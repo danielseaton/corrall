@@ -1,5 +1,6 @@
 from __future__ import print_function
 import cyvcf2
+import allel
 import pandas as pd
 import numpy as np
 
@@ -85,6 +86,27 @@ def get_het_snp_phase_dataframe(snp_df, samples):
             pass
 
     return out_df
+
+def filter_to_het_snps(snp_list, sample):
+    '''Takes a list of SNPs and a sample ID, and returns the subset of SNPs heterozygous in that sample'''
+    
+    chromosome_list = [str(x) for x in range(1,23)] + ['X']
+    output_snp_list = []
+    
+    for chromosome in chromosome_list:
+        vcf_file = '/hps/nobackup/hipsci/scratch/genotypes/imputed/REL-2018-01/Renamed/hipsci.wec.gtarray.HumanCoreExome.imputed_phased.20180102.genotypes.chr.{chromosome}.norm.renamed.vcf.gz'.format(chromosome=chromosome)
+        
+        vcf_data = allel.read_vcf(vcf_file, samples=[sample])
+        
+        gen_df = pd.DataFrame(data=genotype_mat, columns=['genotype'], index=vcf_data['variants/ID'])
+        gen_df['snp_id'] = genotype_df.index
+        
+        snp_subset = list(set(snp_list) & set(gen_df.index))
+        gen_df = gen_df.loc[snp_subset, :]
+        
+        gen_df = gen_df.query('genotype==1')
+        output_snp_list += gen_df['snp_id'].tolist()
+    return output_snp_list
 
 
 if __name__ == "__main__":
