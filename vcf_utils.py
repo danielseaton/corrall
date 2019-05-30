@@ -97,8 +97,9 @@ def filter_to_het_snps(snp_list, sample):
         vcf_file = '/hps/nobackup/hipsci/scratch/genotypes/imputed/REL-2018-01/Renamed/hipsci.wec.gtarray.HumanCoreExome.imputed_phased.20180102.genotypes.chr.{chromosome}.norm.renamed.vcf.gz'.format(chromosome=chromosome)
         
         vcf_data = allel.read_vcf(vcf_file, samples=[sample])
-        
-        gen_df = pd.DataFrame(data=genotype_mat, columns=['genotype'], index=vcf_data['variants/ID'])
+
+        gen_mat = allel.GenotypeArray(vcf_data['calldata/GT']).to_n_alt()
+        gen_df = pd.DataFrame(data=gen_mat, columns=['genotype'], index=vcf_data['variants/ID'])
         gen_df['snp_id'] = genotype_df.index
         
         snp_subset = list(set(snp_list) & set(gen_df.index))
