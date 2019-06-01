@@ -90,7 +90,7 @@ def get_het_snp_phase_dataframe(snp_df, samples):
 def filter_to_het_snps(snp_list, sample):
     '''Takes a list of SNPs and a sample ID, and returns the subset of SNPs heterozygous in that sample'''
     
-    chromosome_list = [str(x) for x in range(1,23)] + ['X']
+    chromosome_list = [str(x) for x in range(1,23)]# + ['X']
     output_snp_list = []
     
     for chromosome in chromosome_list:
@@ -100,7 +100,7 @@ def filter_to_het_snps(snp_list, sample):
 
         gen_mat = allel.GenotypeArray(vcf_data['calldata/GT']).to_n_alt()
         gen_df = pd.DataFrame(data=gen_mat, columns=['genotype'], index=vcf_data['variants/ID'])
-        gen_df['snp_id'] = genotype_df.index
+        gen_df['snp_id'] = gen_df.index
         
         snp_subset = list(set(snp_list) & set(gen_df.index))
         gen_df = gen_df.loc[snp_subset, :]
