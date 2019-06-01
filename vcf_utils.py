@@ -90,11 +90,11 @@ def get_het_snp_phase_dataframe(snp_df, samples):
 def filter_to_het_snps(snp_list, sample):
     '''Takes a list of SNPs and a sample ID, and returns the subset of SNPs heterozygous in that sample'''
     
-    chromosome_list = [str(x) for x in range(1,23)]# + ['X']
+    chromosome_list = [str(x) for x in range(1,23)] + ['X']
     output_snp_list = []
     
     for chromosome in chromosome_list:
-        vcf_file = '/hps/nobackup/hipsci/scratch/genotypes/imputed/REL-2018-01/Renamed/hipsci.wec.gtarray.HumanCoreExome.imputed_phased.20180102.genotypes.chr.{chromosome}.norm.renamed.vcf.gz'.format(chromosome=chromosome)
+        vcf_file = _get_vcf_filepath(chromosome)
         
         vcf_data = allel.read_vcf(vcf_file, samples=[sample])
 
@@ -109,6 +109,13 @@ def filter_to_het_snps(snp_list, sample):
         output_snp_list += gen_df['snp_id'].tolist()
     return output_snp_list
 
+
+def _get_vcf_filepath(chromosome):
+    if chromosome=='X':
+        vcf_file = '/hps/nobackup/hipsci/scratch/genotypes/imputed/dseaton_genotype_processing/REL-2018-01/Renamed/hipsci.wec.gtarray.HumanCoreExome.imputed_phased.20180102.genotypes.chr.{chromosome}.norm.renamed.vcf.gz'.format(chromosome=chromosome)
+    else:
+        vcf_file = '/hps/nobackup/hipsci/scratch/genotypes/imputed/REL-2018-01/Renamed/hipsci.wec.gtarray.HumanCoreExome.imputed_phased.20180102.genotypes.chr.{chromosome}.norm.renamed.vcf.gz'.format(chromosome=chromosome)
+    return vcf_file
 
 if __name__ == "__main__":
     import doctest
