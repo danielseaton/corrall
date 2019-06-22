@@ -12,7 +12,7 @@ import vcf_utils
 
 parser = argparse.ArgumentParser(description='Collect data for all samples from a particular individual.')
 parser.add_argument('donor_id', help='donor ID, to match format from the donor_id column in donor_id_mapping_file')
-parser.add_argument('donor_id_mapping_file', help='tab-separated file with \"donor_id\" and \"filepath\" columns, mapping donors to ase quantification files')
+parser.add_argument('donor_id_mapping_file', help='tab-separated file with \"donor_id\" and \"filepath\" columns, mapping donors to ase quantification files. Optional additional \"cell_id\" column to specify unique cell IDs.')
 parser.add_argument('out_dir', help='output directory')
 args = parser.parse_args()
 
@@ -29,6 +29,13 @@ donor_df = pd.read_csv(donor_id_mapping_file, sep='\t')
 
 sub_donor_df = donor_df.query('donor_id==@donor_id')
 filelist = sub_donor_df['filepath'].tolist()
+if 'cell_id' in sub_donor_df.columns:
+    cell_id_list = sub_donor_df['cell_id'].tolist()
+else:
+    cell_id_list = [os.path.basename(f).split('.')[0] for f in filelist]
+if len(cell_id_list)>len(set(cell_id_list)):
+    print('Warning: some cell IDs are duplicated. Use a donor mapping file with a unique "cell_id" column.')
+
 n_files_expected = len(filelist)
 missing_filelist = [x for x in filelist if not os.path.exists(x)]
 filelist = [x for x in filelist if os.path.exists(x)]
@@ -75,17 +82,13 @@ total_df = pd.DataFrame(index=selected_snps,columns=sample_ids)
 snp_df_columns= ['contig','position','variantID','refAllele','altAllele']
 snp_df = pd.DataFrame(np.nan,index=selected_snps,columns=snp_df_columns)
     
-for idx,filename in enumerate(filelist):
-    sample_id = os.path.basename(filename).split('.')[0]
+for cell_id,filename in zip(cell_id, filelist):
     
-    df = pd.read_csv(filename, sep='\t', index_col=2)
-    
-    #df['ratio'] = df['refCount']/df['totalCount']
-    
+    df = pd.read_csv(filename, sep='\t', index_col=2)    
     snp_subset = list(set(selected_snps) & set(df.index))
     
-    alt_df.loc[snp_subset,sample_id] = df.loc[snp_subset,'altCount']
-    total_df.loc[snp_subset,sample_id] = df.loc[snp_subset,'totalCount']
+    alt_df.loc[snp_subset,cell_id] = df.loc[snp_subset,'altCount']
+    total_df.loc[snp_subset,cell_id] = df.loc[snp_subset,'totalCount']
     snp_df.loc[snp_subset,snp_df_columns] = df.loc[snp_subset,snp_df_columns]
 
 alt_df.to_csv(alt_outfile,sep='\t')
