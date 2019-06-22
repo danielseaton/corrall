@@ -82,7 +82,7 @@ total_df = pd.DataFrame(index=selected_snps,columns=sample_ids)
 snp_df_columns= ['contig','position','variantID','refAllele','altAllele']
 snp_df = pd.DataFrame(np.nan,index=selected_snps,columns=snp_df_columns)
     
-for cell_id,filename in zip(cell_id, filelist):
+for cell_id,filename in zip(cell_id_list, filelist):
     
     df = pd.read_csv(filename, sep='\t', index_col=2)    
     snp_subset = list(set(selected_snps) & set(df.index))
