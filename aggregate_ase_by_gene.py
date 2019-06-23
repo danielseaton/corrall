@@ -33,7 +33,7 @@ gene_bed = pybedtools.BedTool(gene_bedfile)
 snp_df = pd.read_csv(snp_info_file, sep='\t', index_col=0)
 snp_df = snp_df.loc[alt_df.index, :]
 # convert chr names
-snp_df['chromosome'] = snp_df['contig'].astype(str).apply(lambda x: x.replace('chr', ''))
+snp_df['chromosome'] = snp_df['contig'].astype(str).apply(lambda x: x.replace('chr', '').split('.')[0])
 # snp_df['chromosome'] = snp_df['contig']
 snp_df['start'] = snp_df['position'].apply(int)
 snp_df['end'] = snp_df['position'].apply(int)
