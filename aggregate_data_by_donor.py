@@ -75,13 +75,12 @@ selected_snps = vcf_utils.filter_to_het_snps(selected_snps, donor_id)
 print('{} SNPs selected of {}'.format(len(selected_snps),len(counter_dict.keys())))
 
 #make tables
-sample_ids = [os.path.basename(x).split('.')[0] for x in filelist]
-alt_df = pd.DataFrame(index=selected_snps,columns=sample_ids)
-total_df = pd.DataFrame(index=selected_snps,columns=sample_ids)
+alt_df = pd.DataFrame(index=selected_snps,columns=cell_id_list)
+total_df = pd.DataFrame(index=selected_snps,columns=cell_id_list)
 
 snp_df_columns= ['contig','position','variantID','refAllele','altAllele']
-snp_df = pd.DataFrame(np.nan,index=selected_snps,columns=snp_df_columns)
-    
+snp_df = pd.DataFrame(index=selected_snps, columns=snp_df_columns)
+
 for cell_id,filename in zip(cell_id_list, filelist):
     
     df = pd.read_csv(filename, sep='\t', index_col=2)    
